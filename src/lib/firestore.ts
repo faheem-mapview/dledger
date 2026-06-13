@@ -57,6 +57,12 @@ export interface UserSettings {
   }
 }
 
+export interface WeightLog {
+  id: string
+  kg: number
+  date: string
+}
+
 // ── Settings ───────────────────────────────────────────────────────────────
 
 export async function getSettings(uid: string): Promise<UserSettings> {
@@ -149,6 +155,19 @@ export async function addScreen(uid: string, item: Omit<ScreenItem, "id">): Prom
 
 export async function deleteScreen(uid: string, id: string): Promise<void> {
   await deleteDoc(doc(db, "users", uid, "screen", id))
+}
+
+// ── Weight ─────────────────────────────────────────────────────────────────
+
+export const subscribeWeights = (uid: string, cb: (items: WeightLog[]) => void) =>
+  subscribeTo<WeightLog>(uid, "weights", cb)
+
+export async function logWeight(uid: string, kg: number, date: string): Promise<void> {
+  await setDoc(doc(db, "users", uid, "weights", date), { kg, date, createdAt: serverTimestamp() })
+}
+
+export async function deleteWeightLog(uid: string, date: string): Promise<void> {
+  await deleteDoc(doc(db, "users", uid, "weights", date))
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────

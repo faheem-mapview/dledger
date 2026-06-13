@@ -5,8 +5,8 @@ import { useRouter } from "next/navigation"
 import { useAuth } from "@/context/AuthContext"
 import { signOut } from "@/lib/auth"
 import {
-  subscribeTasks, subscribeFood, subscribeExercise, subscribeWork, subscribeScreen,
-  getSettings, type Task, type FoodItem, type ExerciseItem, type WorkItem, type ScreenItem, type UserSettings,
+  subscribeTasks, subscribeFood, subscribeExercise, subscribeWork, subscribeScreen, subscribeWeights,
+  getSettings, type Task, type FoodItem, type ExerciseItem, type WorkItem, type ScreenItem, type UserSettings, type WeightLog,
 } from "@/lib/firestore"
 import { OverviewTab } from "@/components/tabs/OverviewTab"
 import { TasksTab } from "@/components/tabs/TasksTab"
@@ -40,6 +40,7 @@ export default function DashboardPage() {
   const [exercise, setExercise] = useState<ExerciseItem[]>([])
   const [work, setWork] = useState<WorkItem[]>([])
   const [screen, setScreen] = useState<ScreenItem[]>([])
+  const [weights, setWeights] = useState<WeightLog[]>([])
   const [settings, setSettings] = useState<UserSettings>({ maintenance: "", unit: "kg", profile: {} })
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
@@ -56,6 +57,7 @@ export default function DashboardPage() {
       subscribeExercise(user.uid, setExercise),
       subscribeWork(user.uid, setWork),
       subscribeScreen(user.uid, setScreen),
+      subscribeWeights(user.uid, setWeights),
     ]
     return () => unsubs.forEach((u) => u())
   }, [user])
@@ -168,13 +170,13 @@ export default function DashboardPage() {
         </header>
 
         {/* Content */}
-        <main className="flex-1 overflow-y-auto p-6">
-          {tab === "overview" && <OverviewTab uid={user.uid} food={food} exercise={exercise} work={work} screen={screen} tasks={tasks} settings={settings} onSettingsChange={setSettings} />}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6">
+          {tab === "overview" && <OverviewTab uid={user.uid} food={food} exercise={exercise} work={work} screen={screen} tasks={tasks} settings={settings} weights={weights} onSettingsChange={setSettings} />}
           {tab === "tasks" && <TasksTab uid={user.uid} tasks={tasks} />}
           {tab === "food" && <FoodTab uid={user.uid} food={food} />}
           {tab === "exercise" && <ExerciseTab uid={user.uid} exercise={exercise} />}
           {tab === "activity" && <ActivityTab uid={user.uid} work={work} screen={screen} />}
-          {tab === "collections" && <CollectionsTab food={food} exercise={exercise} work={work} screen={screen} tasks={tasks} settings={settings} />}
+          {tab === "collections" && <CollectionsTab food={food} exercise={exercise} work={work} screen={screen} tasks={tasks} settings={settings} weights={weights} />}
         </main>
       </div>
     </div>

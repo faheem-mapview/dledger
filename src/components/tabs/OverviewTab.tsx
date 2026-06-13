@@ -1,25 +1,42 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import {
-  type FoodItem, type ExerciseItem, type WorkItem, type ScreenItem, type Task, type UserSettings,
-  todays, sum, round1, KCAL_PER_KG, saveSettings,
+  type FoodItem, type ExerciseItem, type WorkItem, type ScreenItem, type Task,
+  type UserSettings, type WeightLog,
+  todays, sum, round1, KCAL_PER_KG, saveSettings, logWeight, deleteWeightLog, today,
 } from "@/lib/firestore"
-import { UtensilsCrossed, Dumbbell, Monitor, TrendingUp, CheckSquare } from "lucide-react"
+import { UtensilsCrossed, Dumbbell, Monitor, TrendingUp, CheckSquare, Weight } from "lucide-react"
 
 interface Props {
   uid: string; food: FoodItem[]; exercise: ExerciseItem[]; work: WorkItem[]
-  screen: ScreenItem[]; tasks: Task[]; settings: UserSettings
+  screen: ScreenItem[]; tasks: Task[]; settings: UserSettings; weights: WeightLog[]
   onSettingsChange: (s: UserSettings) => void
 }
 
-export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings, onSettingsChange }: Props) {
-  const [pWeight, setPWeight] = useState(String(settings.profile.weight ?? ""))
-  const [pHeight, setPHeight] = useState(String(settings.profile.height ?? ""))
-  const [pAge, setPAge] = useState(String(settings.profile.age ?? ""))
-  const [pSex, setPSex] = useState(settings.profile.sex ?? "male")
-  const [pActivity, setPActivity] = useState(String(settings.profile.activity ?? "1.375"))
-  const [maintVal, setMaintVal] = useState(String(settings.maintenance ?? ""))
+export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings, weights, onSettingsChange }: Props) {
+  const [pWeight, setPWeight] = useState("")
+  const [pHeight, setPHeight] = useState("")
+  const [pAge, setPAge] = useState("")
+  const [pSex, setPSex] = useState("male")
+  const [pActivity, setPActivity] = useState("1.375")
+  const [maintVal, setMaintVal] = useState("")
+  const [weightInput, setWeightInput] = useState("")
+  const synced = useRef(false)
+
+  // Sync form state once when real settings arrive from Firestore
+  useEffect(() => {
+    if (synced.current) return
+    if (settings.maintenance !== "" || settings.profile.weight || settings.profile.height) {
+      synced.current = true
+      setPWeight(String(settings.profile.weight ?? ""))
+      setPHeight(String(settings.profile.height ?? ""))
+      setPAge(String(settings.profile.age ?? ""))
+      setPSex(settings.profile.sex ?? "male")
+      setPActivity(String(settings.profile.activity ?? "1.375"))
+      setMaintVal(String(settings.maintenance ?? ""))
+    }
+  }, [settings])
 
   const cIn = sum(todays(food), (x) => x.calories)
   const cOut = sum(todays(exercise), (x) => x.calories)
@@ -33,6 +50,8 @@ export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings
   const balance = maint ? cIn - (maint + cOut) : null
   const kg = balance !== null ? balance / KCAL_PER_KG : null
   const losing = balance !== null && balance < 0
+
+  const todayWeight = weights.find((w) => w.date === today())
 
   function handleCalc() {
     const w = Number(pWeight), h = Number(pHeight), a = Number(pAge), act = Number(pActivity)
@@ -49,9 +68,16 @@ export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings
     onSettingsChange(next); saveSettings(uid, next)
   }
 
+  async function handleLogWeight() {
+    const val = Number(weightInput)
+    if (!val || val < 20 || val > 300) return
+    await logWeight(uid, val, today())
+    setWeightInput("")
+  }
+
   return (
     <div className="space-y-4">
-      {/* Stat cards — 4 columns */}
+      {/* Stat cards */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard label="Calories Eaten" value={cIn} sub="kcal today" icon={<UtensilsCrossed className="h-4 w-4" />} color="text-emerald-600" bg="bg-emerald-50" />
         <StatCard label="Calories Burned" value={cOut} sub="kcal today" icon={<Dumbbell className="h-4 w-4" />} color="text-orange-500" bg="bg-orange-50" />
@@ -59,7 +85,6 @@ export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings
         <StatCard label="Screen Time" value={`${round1(screenH)}h`} sub="logged today" icon={<Monitor className="h-4 w-4" />} color="text-rose-500" bg="bg-rose-50" />
       </div>
 
-      {/* Second row: tasks + meals */}
       <div className="grid grid-cols-2 gap-3">
         <StatCard label="Tasks Done" value={`${tasksDone} / ${tasksTotal}`} sub="today" icon={<CheckSquare className="h-4 w-4" />} color="text-primary" bg="bg-primary/10" />
         <StatCard label="Meals Logged" value={meals} sub={`${hotel} eating out`} icon={<UtensilsCrossed className="h-4 w-4" />} color="text-amber-600" bg="bg-amber-50" />
@@ -67,7 +92,7 @@ export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings
 
       {/* Weight + Calculator */}
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {/* Weight estimate */}
+        {/* Weight estimate + log */}
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <p className="text-sm font-semibold">Today&apos;s Weight Estimate</p>
@@ -95,14 +120,38 @@ export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings
             </>
           )}
 
-          {/* Calorie progress bars */}
           {maint > 0 && (
             <div className="mt-4 space-y-2.5">
               <ProgressBar label="Eaten" value={cIn} max={maint * 1.5} className="bg-emerald-500" />
               <ProgressBar label="Burned" value={cOut} max={maint * 1.5} className="bg-orange-400" />
-              <ProgressBar label="Maintenance" value={maint} max={maint * 1.5} className="bg-blue-500" />
+              <ProgressBar label="Maint." value={maint} max={maint * 1.5} className="bg-blue-500" />
             </div>
           )}
+
+          {/* Log actual weight */}
+          <div className="mt-4 border-t border-border pt-4">
+            <p className="text-xs font-semibold mb-2 flex items-center gap-1.5">
+              <Weight className="h-3.5 w-3.5" /> Log Actual Weight
+            </p>
+            {todayWeight ? (
+              <div className="flex items-center justify-between rounded-lg bg-muted px-3 py-2">
+                <span className="text-sm font-bold">{todayWeight.kg} kg <span className="text-xs font-normal text-muted-foreground">logged today</span></span>
+                <button onClick={() => deleteWeightLog(uid, today())}
+                  className="text-xs text-muted-foreground hover:text-destructive transition-colors">Remove</button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <input type="number" value={weightInput} onChange={(e) => setWeightInput(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleLogWeight()}
+                  placeholder="e.g. 72.5" min="20" max="300" step="0.1"
+                  className="flex-1 rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" />
+                <button onClick={handleLogWeight}
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors whitespace-nowrap">
+                  Save kg
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Maintenance calculator */}
@@ -139,9 +188,9 @@ export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings
               <option value="1.725">Very active</option>
             </select>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
             <button onClick={handleCalc}
-              className="flex-shrink-0 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors">
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors">
               Calculate
             </button>
             <div className="flex flex-1 items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2">
@@ -175,11 +224,11 @@ function ProgressBar({ label, value, max, className }: { label: string; value: n
   const pct = Math.min((value / max) * 100, 100)
   return (
     <div className="flex items-center gap-3">
-      <span className="w-20 text-right text-xs text-muted-foreground flex-shrink-0">{label}</span>
+      <span className="w-14 text-right text-xs text-muted-foreground flex-shrink-0">{label}</span>
       <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden">
         <div className={`h-full rounded-full transition-all duration-500 ${className}`} style={{ width: `${pct}%` }} />
       </div>
-      <span className="w-16 text-xs font-medium text-foreground flex-shrink-0">{value} kcal</span>
+      <span className="w-16 text-xs font-medium text-foreground flex-shrink-0 text-right">{value}</span>
     </div>
   )
 }

@@ -1,13 +1,13 @@
 "use client"
 
-import { type FoodItem, type ExerciseItem, type WorkItem, type ScreenItem, type Task, type UserSettings, sum, round1, KCAL_PER_KG, today } from "@/lib/firestore"
+import { type FoodItem, type ExerciseItem, type WorkItem, type ScreenItem, type Task, type UserSettings, type WeightLog, sum, round1, KCAL_PER_KG, today } from "@/lib/firestore"
 
 interface Props {
   food: FoodItem[]; exercise: ExerciseItem[]; work: WorkItem[]
-  screen: ScreenItem[]; tasks: Task[]; settings: UserSettings
+  screen: ScreenItem[]; tasks: Task[]; settings: UserSettings; weights: WeightLog[]
 }
 
-export function CollectionsTab({ food, exercise, work, screen, tasks, settings }: Props) {
+export function CollectionsTab({ food, exercise, work, screen, tasks, settings, weights }: Props) {
   const allItems = [...food, ...exercise, ...work, ...screen, ...tasks]
   const dates = [...new Set(allItems.map((x) => x.date).filter(Boolean))].sort().reverse()
 
@@ -35,13 +35,19 @@ export function CollectionsTab({ food, exercise, work, screen, tasks, settings }
         const kg = balance !== null ? balance / KCAL_PER_KG : null
         const losing = kg !== null && kg < 0
         const label = new Date(d + "T00:00:00").toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })
+        const weightLog = weights.find((w) => w.date === d)
 
         return (
           <div key={d} className="rounded-xl border border-border bg-card p-5 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <p className="font-semibold">{label}</p>
                 {d === today() && <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">Today</span>}
+                {weightLog && (
+                  <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-semibold text-slate-600">
+                    ⚖ {weightLog.kg} kg
+                  </span>
+                )}
               </div>
               {kg !== null && (cIn > 0 || cOut > 0) && (
                 <span className={`rounded-full px-3 py-1 text-xs font-semibold ${losing ? "bg-emerald-50 text-emerald-700" : "bg-orange-50 text-orange-600"}`}>
