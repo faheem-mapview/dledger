@@ -108,7 +108,7 @@ export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings
         {/* Maintenance calculator */}
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
           <p className="text-sm font-semibold mb-4">Maintenance Calories</p>
-          <div className="grid grid-cols-2 gap-2.5 mb-2.5">
+          <div className="grid grid-cols-1 gap-2.5 mb-2.5 sm:grid-cols-2">
             {[
               { label: "Weight (kg)", val: pWeight, set: setPWeight, ph: "70" },
               { label: "Height (cm)", val: pHeight, set: setPHeight, ph: "170" },
