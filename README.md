@@ -1,6 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Daily Ledger
 
-## Getting Started
+A Next.js 16 app for tracking daily income and expenses, backed by Firebase.
+
+## Stack
+
+- **Next.js 16** (App Router, TypeScript)
+- **Firebase** — Auth (email/password) + Firestore
+- **shadcn/ui** components (Radix UI + Tailwind CSS v4)
+
+## Setup
+
+### 1. Firebase project
+
+1. Go to [Firebase Console](https://console.firebase.google.com/) and create a project.
+2. Enable **Authentication → Email/Password** provider.
+3. Create a **Firestore Database** (test mode for dev).
+4. In Project Settings → Your apps → Add a Web app — copy the config.
+
+### 2. Environment variables
+
+```bash
+cp .env.local.example .env.local
+```
+
+Fill in your Firebase config values in `.env.local`.
+
+### 3. Run
+
+```bash
+npm run dev
+```
+
+Open http://localhost:3000
+
+## Firestore security rules (recommended for production)
+
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{userId}/entries/{entryId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+```
+
+---
+
+## Original Next.js docs
 
 First, run the development server:
 
