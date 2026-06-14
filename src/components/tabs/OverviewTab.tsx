@@ -6,7 +6,7 @@ import {
   type UserSettings, type WeightLog,
   sum, round1, KCAL_PER_KG, saveSettings, logWeight, deleteWeightLog, today,
 } from "@/lib/firestore"
-import { UtensilsCrossed, Dumbbell, Monitor, TrendingUp, CheckSquare, Weight } from "lucide-react"
+import { UtensilsCrossed, Dumbbell, Monitor, TrendingUp, CheckSquare, Weight, ChevronDown, ChevronUp } from "lucide-react"
 
 interface Props {
   uid: string; food: FoodItem[]; exercise: ExerciseItem[]; work: WorkItem[]
@@ -23,6 +23,7 @@ export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings
   const [pActivity, setPActivity] = useState("1.375")
   const [maintVal, setMaintVal] = useState("")
   const [weightInput, setWeightInput] = useState("")
+  const [showCalc, setShowCalc] = useState(false)
   const synced = useRef(false)
 
   // Sync form state once when real settings arrive from Firestore
@@ -169,51 +170,69 @@ export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings
 
         {/* Maintenance calculator */}
         <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-          <p className="text-sm font-semibold mb-4">Maintenance Calories</p>
-          <div className="grid grid-cols-1 gap-2.5 mb-2.5 sm:grid-cols-2">
-            {[
-              { label: "Weight (kg)", val: pWeight, set: setPWeight, ph: "70" },
-              { label: "Height (cm)", val: pHeight, set: setPHeight, ph: "170" },
-              { label: "Age", val: pAge, set: setPAge, ph: "30" },
-            ].map(({ label, val, set, ph }) => (
-              <div key={label}>
-                <label className="mb-1 block text-xs text-muted-foreground">{label}</label>
-                <input type="number" value={val} onChange={(e) => set(e.target.value)} placeholder={ph}
-                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" />
+          <button onClick={() => setShowCalc((v) => !v)}
+            className="flex w-full items-center justify-between">
+            <p className="text-sm font-semibold">Maintenance Calories</p>
+            <div className="flex items-center gap-2">
+              {maint > 0 && !showCalc && (
+                <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">{maint} kcal/day</span>
+              )}
+              {showCalc ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+            </div>
+          </button>
+
+          {!maint && !showCalc && (
+            <p className="mt-2 text-xs text-muted-foreground">Not set — tap to configure once.</p>
+          )}
+
+          {showCalc && (
+            <div className="mt-4">
+              <div className="grid grid-cols-1 gap-2.5 mb-2.5 sm:grid-cols-2">
+                {[
+                  { label: "Weight (kg)", val: pWeight, set: setPWeight, ph: "70" },
+                  { label: "Height (cm)", val: pHeight, set: setPHeight, ph: "170" },
+                  { label: "Age", val: pAge, set: setPAge, ph: "30" },
+                ].map(({ label, val, set, ph }) => (
+                  <div key={label}>
+                    <label className="mb-1 block text-xs text-muted-foreground">{label}</label>
+                    <input type="number" value={val} onChange={(e) => set(e.target.value)} placeholder={ph}
+                      className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" />
+                  </div>
+                ))}
+                <div>
+                  <label className="mb-1 block text-xs text-muted-foreground">Sex</label>
+                  <select value={pSex} onChange={(e) => setPSex(e.target.value)}
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring">
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                  </select>
+                </div>
               </div>
-            ))}
-            <div>
-              <label className="mb-1 block text-xs text-muted-foreground">Sex</label>
-              <select value={pSex} onChange={(e) => setPSex(e.target.value)}
-                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring">
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-              </select>
+              <div className="mb-4">
+                <label className="mb-1 block text-xs text-muted-foreground">Activity level</label>
+                <select value={pActivity} onChange={(e) => setPActivity(e.target.value)}
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring">
+                  <option value="1.2">Sedentary</option>
+                  <option value="1.375">Light activity</option>
+                  <option value="1.55">Moderate activity</option>
+                  <option value="1.725">Very active</option>
+                </select>
+              </div>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <button onClick={() => { handleCalc(); setShowCalc(false) }}
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors">
+                  Calculate &amp; Save
+                </button>
+                <div className="flex flex-1 items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2">
+                  <span className="text-xs font-semibold text-primary flex-shrink-0">Maint.</span>
+                  <input type="number" value={maintVal} onChange={(e) => handleMaintInput(e.target.value)} placeholder="—"
+                    className="min-w-0 flex-1 bg-transparent text-sm font-bold text-primary outline-none" />
+                  <span className="text-xs text-primary/70 flex-shrink-0">kcal/day</span>
+                </div>
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">Mifflin-St Jeor formula. Height stays constant — only weight updates automatically.</p>
             </div>
-          </div>
-          <div className="mb-4">
-            <label className="mb-1 block text-xs text-muted-foreground">Activity level</label>
-            <select value={pActivity} onChange={(e) => setPActivity(e.target.value)}
-              className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring">
-              <option value="1.2">Sedentary</option>
-              <option value="1.375">Light activity</option>
-              <option value="1.55">Moderate activity</option>
-              <option value="1.725">Very active</option>
-            </select>
-          </div>
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-            <button onClick={handleCalc}
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors">
-              Calculate
-            </button>
-            <div className="flex flex-1 items-center gap-1.5 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2">
-              <span className="text-xs font-semibold text-primary flex-shrink-0">Maint.</span>
-              <input type="number" value={maintVal} onChange={(e) => handleMaintInput(e.target.value)} placeholder="—"
-                className="min-w-0 flex-1 bg-transparent text-sm font-bold text-primary outline-none" />
-              <span className="text-xs text-primary/70 flex-shrink-0">kcal/day</span>
-            </div>
-          </div>
-          <p className="mt-2 text-xs text-muted-foreground">Mifflin-St Jeor formula. Keep activity Sedentary if you log workouts separately.</p>
+          )}
         </div>
       </div>
     </div>
