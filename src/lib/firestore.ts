@@ -114,6 +114,10 @@ export async function addFood(uid: string, item: Omit<FoodItem, "id">): Promise<
   await addDoc(collection(db, "users", uid, "food"), { ...item, createdAt: serverTimestamp() })
 }
 
+export async function updateFood(uid: string, id: string, fields: Partial<Omit<FoodItem, "id">>): Promise<void> {
+  await updateDoc(doc(db, "users", uid, "food", id), fields)
+}
+
 export async function deleteFood(uid: string, id: string): Promise<void> {
   await deleteDoc(doc(db, "users", uid, "food", id))
 }
@@ -125,6 +129,10 @@ export const subscribeExercise = (uid: string, cb: (items: ExerciseItem[]) => vo
 
 export async function addExercise(uid: string, item: Omit<ExerciseItem, "id">): Promise<void> {
   await addDoc(collection(db, "users", uid, "exercise"), { ...item, createdAt: serverTimestamp() })
+}
+
+export async function updateExercise(uid: string, id: string, fields: Partial<Omit<ExerciseItem, "id">>): Promise<void> {
+  await updateDoc(doc(db, "users", uid, "exercise", id), fields)
 }
 
 export async function deleteExercise(uid: string, id: string): Promise<void> {
