@@ -5,129 +5,101 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* ── Burnt Sienna theme ────────────────────────────────────────────────── */
-:root {
+@theme inline {
+  /* ── Burnt Sienna palette ───────────────────────────── */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
   /* surfaces */
-  --background:              #FBF7F0;
-  --foreground:              #2A1E16;
-  --card:                    #FFFFFF;
-  --card-foreground:         #2A1E16;
-  --popover:                 #FFFFFF;
-  --popover-foreground:      #2A1E16;
+  --color-background:            #FBF7F0;
+  --color-foreground:            #2A1E16;
+  --color-card:                  #FFFFFF;
+  --color-card-foreground:       #2A1E16;
+  --color-popover:               #FFFFFF;
+  --color-popover-foreground:    #2A1E16;
 
   /* primary — terracotta */
-  --primary:                 #E35336;
-  --primary-foreground:      #FFFFFF;
+  --color-primary:               #E35336;
+  --color-primary-foreground:    #FFFFFF;
 
   /* secondary / muted — warm cream */
-  --secondary:               #F6EFE3;
-  --secondary-foreground:    #2A1E16;
-  --muted:                   #F6EFE3;
-  --muted-foreground:        #9D8C78;
+  --color-secondary:             #F6EFE3;
+  --color-secondary-foreground:  #2A1E16;
+  --color-muted:                 #F6EFE3;
+  --color-muted-foreground:      #9D8C78;
 
-  /* accent — zebra hover */
-  --accent:                  #FBF6EC;
-  --accent-foreground:       #2A1E16;
+  /* accent — warm hover */
+  --color-accent:                #FBF6EC;
+  --color-accent-foreground:     #2A1E16;
 
   /* status */
-  --destructive:             #C0402B;
+  --color-destructive:           #C0402B;
 
-  /* borders & inputs */
-  --border:                  #ECE2D2;
-  --input:                   #DECFB8;
-  --ring:                    #E35336;
-
-  /* radius */
-  --radius:                  0.75rem;
+  /* borders */
+  --color-border:                #ECE2D2;
+  --color-input:                 #DECFB8;
+  --color-ring:                  #E35336;
 
   /* sidebar */
-  --sidebar:                 #FFFFFF;
-  --sidebar-foreground:      #2A1E16;
-  --sidebar-primary:         #E35336;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent:          #FBE3DC;
-  --sidebar-accent-foreground: #C8442A;
-  --sidebar-border:          #ECE2D2;
-  --sidebar-ring:            #E35336;
+  --color-sidebar:               #FFFFFF;
+  --color-sidebar-foreground:    #2A1E16;
+  --color-sidebar-primary:       #E35336;
+  --color-sidebar-primary-foreground: #FFFFFF;
+  --color-sidebar-accent:        #FBE3DC;
+  --color-sidebar-accent-foreground: #C8442A;
+  --color-sidebar-border:        #ECE2D2;
+  --color-sidebar-ring:          #E35336;
+
+  /* radius */
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  14px;
+  --radius-xl:  18px;
+  --radius-2xl: 22px;
+}
+
+/* Keep CSS custom properties for direct var() usage in components */
+:root {
+  --background:   #FBF7F0;
+  --foreground:   #2A1E16;
+  --primary:      #E35336;
+  --muted:        #F6EFE3;
+  --border:       #ECE2D2;
+  --ring:         #E35336;
+  --radius:       0.75rem;
 }
 
 .dark {
-  --background:              #1E1712;
-  --foreground:              #F5ECDE;
-  --card:                    #2A2017;
-  --card-foreground:         #F5ECDE;
-  --popover:                 #2A2017;
-  --popover-foreground:      #F5ECDE;
-
-  --primary:                 #E35336;
-  --primary-foreground:      #FFFFFF;
-
-  --secondary:               #332619;
-  --secondary-foreground:    #F5ECDE;
-  --muted:                   #332619;
-  --muted-foreground:        #95846F;
-
-  --accent:                  #2F2418;
-  --accent-foreground:       #F5ECDE;
-
-  --destructive:             #E05A45;
-
-  --border:                  #3B2E20;
-  --input:                   #4A3A28;
-  --ring:                    #E35336;
-
-  --sidebar:                 #2A2017;
-  --sidebar-foreground:      #F5ECDE;
-  --sidebar-primary:         #E35336;
-  --sidebar-primary-foreground: #FFFFFF;
-  --sidebar-accent:          #43271D;
-  --sidebar-accent-foreground: #F4A460;
-  --sidebar-border:          #3B2E20;
-  --sidebar-ring:            #E35336;
-}
-
-@theme inline {
-  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-display: 'Fraunces', Georgia, serif;
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
+  --color-background:            #1E1712;
+  --color-foreground:            #F5ECDE;
+  --color-card:                  #2A2017;
+  --color-card-foreground:       #F5ECDE;
+  --color-popover:               #2A2017;
+  --color-popover-foreground:    #F5ECDE;
+  --color-primary:               #E35336;
+  --color-primary-foreground:    #FFFFFF;
+  --color-secondary:             #332619;
+  --color-secondary-foreground:  #F5ECDE;
+  --color-muted:                 #332619;
+  --color-muted-foreground:      #95846F;
+  --color-accent:                #2F2418;
+  --color-accent-foreground:     #F5ECDE;
+  --color-destructive:           #E05A45;
+  --color-border:                #3B2E20;
+  --color-input:                 #4A3A28;
+  --color-ring:                  #E35336;
+  --color-sidebar:               #2A2017;
+  --color-sidebar-foreground:    #F5ECDE;
+  --color-sidebar-accent:        #43271D;
+  --color-sidebar-accent-foreground: #F4A460;
+  --color-sidebar-border:        #3B2E20;
 }
 
 @layer base {
   * { @apply border-border outline-ring/50; }
-  body { @apply bg-background text-foreground font-sans antialiased; }
-  :focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+  body { @apply bg-background text-foreground antialiased; font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+  :focus-visible { outline: 2px solid #E35336; outline-offset: 2px; }
   ::selection { background: #FBE3DC; }
-  *::-webkit-scrollbar { width: 8px; height: 8px; }
+  *::-webkit-scrollbar { width: 8px; }
   *::-webkit-scrollbar-thumb { background: #DECFB8; border-radius: 99px; border: 2px solid transparent; background-clip: content-box; }
   *::-webkit-scrollbar-track { background: transparent; }
 }
