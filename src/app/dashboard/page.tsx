@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/context/AuthContext"
 import { signOut } from "@/lib/auth"
@@ -21,6 +21,7 @@ import {
 } from "lucide-react"
 
 function DateNav({ date, onChange }: { date: string; onChange: (d: string) => void }) {
+  const inputRef = useRef<HTMLInputElement>(null)
   const todayStr = new Date().toISOString().slice(0, 10)
   const isToday = date === todayStr
   const label = isToday
@@ -30,15 +31,17 @@ function DateNav({ date, onChange }: { date: string; onChange: (d: string) => vo
     : new Date(date + "T00:00:00").toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })
 
   return (
-    <div className="mb-4 relative">
-      <label htmlFor="date-pick" className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-card px-4 py-2 hover:bg-accent transition-colors">
+    <div className="mb-4">
+      <button type="button"
+        onClick={() => inputRef.current?.showPicker()}
+        className="flex w-full items-center justify-center gap-2 rounded-lg border border-border bg-card px-4 py-2 hover:bg-accent transition-colors">
         <CalendarDays className="h-4 w-4 text-muted-foreground flex-shrink-0" />
         <span className="text-sm font-semibold">{label}</span>
-        <span className="text-xs text-muted-foreground">{!isToday ? date : ""}</span>
-      </label>
-      <input type="date" id="date-pick" value={date} max={todayStr}
+        {!isToday && <span className="text-xs text-muted-foreground">{date}</span>}
+      </button>
+      <input ref={inputRef} type="date" value={date} max={todayStr}
         onChange={(e) => { if (e.target.value <= todayStr) onChange(e.target.value) }}
-        className="absolute inset-0 opacity-0 cursor-pointer w-full" />
+        className="sr-only" />
     </div>
   )
 }
