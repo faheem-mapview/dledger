@@ -101,6 +101,9 @@ export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings
 
   return (
     <div className="space-y-4">
+      {/* ── Overall Analytics ── */}
+      <AnalyticsSection food={food} weights={weights} />
+
       {/* Stat cards */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <StatCard label="Calories Eaten" value={cIn} sub="kcal today" icon={<UtensilsCrossed className="h-4 w-4" />} color="text-emerald-600" bg="bg-emerald-50" />
@@ -252,9 +255,6 @@ export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings
           )}
         </div>
       </div>
-
-      {/* ── Overall Analytics ── */}
-      <AnalyticsSection food={food} weights={weights} />
     </div>
   )
 }
