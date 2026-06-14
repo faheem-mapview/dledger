@@ -252,6 +252,113 @@ export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings
           )}
         </div>
       </div>
+
+      {/* ── Overall Analytics ── */}
+      <AnalyticsSection food={food} weights={weights} />
+    </div>
+  )
+}
+
+function AnalyticsSection({ food, weights }: { food: FoodItem[]; weights: WeightLog[] }) {
+  const sortedW = [...weights].sort((a, b) => a.date.localeCompare(b.date))
+  const firstKg = sortedW[0]?.kg
+  const lastKg = sortedW[sortedW.length - 1]?.kg
+  const weightChange = firstKg !== undefined && lastKg !== undefined && sortedW.length >= 2
+    ? round1(lastKg - firstKg) : null
+  const losing = weightChange !== null && weightChange < 0
+
+  const foodDates = [...new Set(food.map((x) => x.date))]
+  const avgCal = foodDates.length
+    ? Math.round(food.reduce((a, x) => a + (x.calories || 0), 0) / foodDates.length) : null
+
+  const eatingOut = food.filter((x) => x.source === "hotel")
+  const lastEODate = eatingOut.length
+    ? [...eatingOut].sort((a, b) => b.date.localeCompare(a.date))[0].date : null
+  const lastEOLabel = lastEODate
+    ? new Date(lastEODate + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" }) : null
+
+  if (!sortedW.length && !avgCal) return null
+
+  return (
+    <div className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-5">
+      <p className="text-sm font-semibold">Overall Progress</p>
+
+      {/* Summary stats row */}
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+        {weightChange !== null && (
+          <div className="rounded-lg bg-muted p-3">
+            <p className="text-[11px] text-muted-foreground mb-1">Weight change</p>
+            <p className={`text-xl font-bold ${losing ? "text-emerald-600" : "text-orange-500"}`}>
+              {losing ? "" : "+"}{weightChange} <span className="text-sm font-medium">kg</span>
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              {round1(firstKg!)} → {round1(lastKg!)} kg
+            </p>
+          </div>
+        )}
+        {avgCal !== null && (
+          <div className="rounded-lg bg-muted p-3">
+            <p className="text-[11px] text-muted-foreground mb-1">Avg calories/day</p>
+            <p className="text-xl font-bold text-emerald-600">{avgCal} <span className="text-sm font-medium">kcal</span></p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">over {foodDates.length} days</p>
+          </div>
+        )}
+        {eatingOut.length > 0 && (
+          <div className="rounded-lg bg-muted p-3">
+            <p className="text-[11px] text-muted-foreground mb-1">Eating out</p>
+            <p className="text-xl font-bold text-orange-500">{eatingOut.length} <span className="text-sm font-medium">times</span></p>
+            {lastEOLabel && <p className="text-[11px] text-muted-foreground mt-0.5">last {lastEOLabel}</p>}
+          </div>
+        )}
+      </div>
+
+      {/* Weight graph */}
+      {sortedW.length >= 2 && <WeightGraph weights={sortedW} />}
+    </div>
+  )
+}
+
+function WeightGraph({ weights }: { weights: WeightLog[] }) {
+  const W = 300, H = 80, PAD = 8
+  const kgs = weights.map((w) => w.kg)
+  const minKg = Math.min(...kgs)
+  const maxKg = Math.max(...kgs)
+  const range = maxKg - minKg || 1
+
+  const pts = weights.map((w, i) => {
+    const x = PAD + (i / (weights.length - 1)) * (W - PAD * 2)
+    const y = PAD + (1 - (w.kg - minKg) / range) * (H - PAD * 2)
+    return { x, y, kg: w.kg, date: w.date }
+  })
+
+  const path = pts.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`).join(" ")
+  const area = `${path} L ${pts[pts.length - 1].x} ${H} L ${pts[0].x} ${H} Z`
+
+  const firstDate = new Date(weights[0].date + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" })
+  const lastDate = new Date(weights[weights.length - 1].date + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" })
+
+  return (
+    <div>
+      <p className="text-[11px] text-muted-foreground mb-2">Weight log ({weights.length} entries)</p>
+      <div className="w-full overflow-hidden rounded-lg bg-muted p-2">
+        <svg viewBox={`0 0 ${W} ${H}`} className="w-full" preserveAspectRatio="none" style={{ height: 80 }}>
+          <defs>
+            <linearGradient id="wg" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="oklch(0.546 0.245 262.881)" stopOpacity="0.25" />
+              <stop offset="100%" stopColor="oklch(0.546 0.245 262.881)" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+          <path d={area} fill="url(#wg)" />
+          <path d={path} fill="none" stroke="oklch(0.546 0.245 262.881)" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
+          {pts.map((p, i) => (
+            <circle key={i} cx={p.x} cy={p.y} r="2.5" fill="oklch(0.546 0.245 262.881)" />
+          ))}
+        </svg>
+        <div className="flex justify-between mt-1 px-1">
+          <span className="text-[10px] text-muted-foreground">{firstDate} · {weights[0].kg}kg</span>
+          <span className="text-[10px] text-muted-foreground">{lastDate} · {weights[weights.length - 1].kg}kg</span>
+        </div>
+      </div>
     </div>
   )
 }
