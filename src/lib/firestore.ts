@@ -51,7 +51,7 @@ export interface UserSettings {
   profile: {
     weight?: number
     height?: number
-    age?: number
+    dob?: string
     sex?: string
     activity?: number
   }

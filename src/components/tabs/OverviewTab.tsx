@@ -18,7 +18,7 @@ interface Props {
 export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings, weights, date, onSettingsChange }: Props) {
   const [pWeight, setPWeight] = useState("")
   const [pHeight, setPHeight] = useState("")
-  const [pAge, setPAge] = useState("")
+  const [pDob, setPDob] = useState("")
   const [pSex, setPSex] = useState("male")
   const [pActivity, setPActivity] = useState("1.375")
   const [maintVal, setMaintVal] = useState("")
@@ -33,7 +33,7 @@ export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings
       synced.current = true
       setPWeight(String(settings.profile.weight ?? ""))
       setPHeight(String(settings.profile.height ?? ""))
-      setPAge(String(settings.profile.age ?? ""))
+      setPDob(settings.profile.dob ?? "")
       setPSex(settings.profile.sex ?? "male")
       setPActivity(String(settings.profile.activity ?? "1.375"))
       setMaintVal(String(settings.maintenance ?? ""))
@@ -56,12 +56,21 @@ export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings
 
   const todayWeight = weights.find((w) => w.date === date)
 
+  function ageFromDob(dob: string) {
+    if (!dob) return 0
+    const today = new Date()
+    const b = new Date(dob)
+    let age = today.getFullYear() - b.getFullYear()
+    if (today.getMonth() < b.getMonth() || (today.getMonth() === b.getMonth() && today.getDate() < b.getDate())) age--
+    return age
+  }
+
   function handleCalc() {
-    const w = Number(pWeight), h = Number(pHeight), a = Number(pAge), act = Number(pActivity)
-    if (!w || !h || !a) return alert("Enter weight, height, and age.")
+    const w = Number(pWeight), h = Number(pHeight), act = Number(pActivity), a = ageFromDob(pDob)
+    if (!w || !h || !pDob) return alert("Enter weight, height, and date of birth.")
     const bmr = 10 * w + 6.25 * h - 5 * a + (pSex === "male" ? 5 : -161)
     const m = Math.round(bmr * act)
-    const next: UserSettings = { ...settings, maintenance: m, profile: { weight: w, height: h, age: a, sex: pSex, activity: act } }
+    const next: UserSettings = { ...settings, maintenance: m, profile: { weight: w, height: h, dob: pDob, sex: pSex, activity: act } }
     setMaintVal(String(m)); onSettingsChange(next); saveSettings(uid, next)
   }
 
@@ -77,11 +86,12 @@ export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings
     await logWeight(uid, val, date)
     setWeightInput("")
     // Auto-recalculate maintenance if profile is complete
-    const { height, age, sex, activity } = settings.profile
+    const { height, dob, sex, activity } = settings.profile
+    const age = dob ? ageFromDob(dob) : 0
     if (height && age && sex && activity) {
       const bmr = 10 * val + 6.25 * height - 5 * age + (sex === "male" ? 5 : -161)
       const m = Math.round(bmr * activity)
-      const next: UserSettings = { ...settings, maintenance: m, profile: { ...settings.profile, weight: val } }
+      const next: UserSettings = { ...settings, maintenance: m, profile: { ...settings.profile, weight: val, dob } }
       setPWeight(String(val))
       setMaintVal(String(m))
       onSettingsChange(next)
@@ -189,16 +199,23 @@ export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings
             <div className="mt-4">
               <div className="grid grid-cols-1 gap-2.5 mb-2.5 sm:grid-cols-2">
                 {[
-                  { label: "Weight (kg)", val: pWeight, set: setPWeight, ph: "70" },
-                  { label: "Height (cm)", val: pHeight, set: setPHeight, ph: "170" },
-                  { label: "Age", val: pAge, set: setPAge, ph: "30" },
-                ].map(({ label, val, set, ph }) => (
+                  { label: "Weight (kg)", val: pWeight, set: setPWeight, ph: "70", type: "number" },
+                  { label: "Height (cm)", val: pHeight, set: setPHeight, ph: "170", type: "number" },
+                ].map(({ label, val, set, ph, type }) => (
                   <div key={label}>
                     <label className="mb-1 block text-xs text-muted-foreground">{label}</label>
-                    <input type="number" value={val} onChange={(e) => set(e.target.value)} placeholder={ph}
+                    <input type={type} value={val} onChange={(e) => set(e.target.value)} placeholder={ph}
                       className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" />
                   </div>
                 ))}
+                <div>
+                  <label className="mb-1 block text-xs text-muted-foreground">
+                    Date of Birth {pDob && <span className="text-primary font-semibold">· Age {ageFromDob(pDob)}</span>}
+                  </label>
+                  <input type="date" value={pDob} onChange={(e) => setPDob(e.target.value)}
+                    max={new Date().toISOString().slice(0, 10)}
+                    className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-ring" />
+                </div>
                 <div>
                   <label className="mb-1 block text-xs text-muted-foreground">Sex</label>
                   <select value={pSex} onChange={(e) => setPSex(e.target.value)}
