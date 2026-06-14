@@ -4,17 +4,18 @@ import { useState, useEffect, useRef } from "react"
 import {
   type FoodItem, type ExerciseItem, type WorkItem, type ScreenItem, type Task,
   type UserSettings, type WeightLog,
-  todays, sum, round1, KCAL_PER_KG, saveSettings, logWeight, deleteWeightLog, today,
+  sum, round1, KCAL_PER_KG, saveSettings, logWeight, deleteWeightLog, today,
 } from "@/lib/firestore"
 import { UtensilsCrossed, Dumbbell, Monitor, TrendingUp, CheckSquare, Weight } from "lucide-react"
 
 interface Props {
   uid: string; food: FoodItem[]; exercise: ExerciseItem[]; work: WorkItem[]
   screen: ScreenItem[]; tasks: Task[]; settings: UserSettings; weights: WeightLog[]
+  date: string
   onSettingsChange: (s: UserSettings) => void
 }
 
-export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings, weights, onSettingsChange }: Props) {
+export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings, weights, date, onSettingsChange }: Props) {
   const [pWeight, setPWeight] = useState("")
   const [pHeight, setPHeight] = useState("")
   const [pAge, setPAge] = useState("")
@@ -38,20 +39,21 @@ export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings
     }
   }, [settings])
 
-  const cIn = sum(todays(food), (x) => x.calories)
-  const cOut = sum(todays(exercise), (x) => x.calories)
-  const workH = sum(todays(work), (x) => x.hours)
-  const screenH = sum(todays(screen), (x) => x.hours)
-  const meals = todays(food).length
-  const hotel = todays(food).filter((x) => x.source === "hotel").length
-  const tasksDone = todays(tasks).filter((x) => x.done).length
-  const tasksTotal = todays(tasks).length
+  const fd = (arr: { date: string }[]) => arr.filter((x) => x.date === date)
+  const cIn = sum(fd(food) as FoodItem[], (x) => x.calories)
+  const cOut = sum(fd(exercise) as ExerciseItem[], (x) => x.calories)
+  const workH = sum(fd(work) as WorkItem[], (x) => x.hours)
+  const screenH = sum(fd(screen) as ScreenItem[], (x) => x.hours)
+  const meals = fd(food).length
+  const hotel = (fd(food) as FoodItem[]).filter((x) => x.source === "hotel").length
+  const tasksDone = (fd(tasks) as Task[]).filter((x) => x.done).length
+  const tasksTotal = fd(tasks).length
   const maint = Number(settings.maintenance) || 0
   const balance = maint ? cIn - (maint + cOut) : null
   const kg = balance !== null ? balance / KCAL_PER_KG : null
   const losing = balance !== null && balance < 0
 
-  const todayWeight = weights.find((w) => w.date === today())
+  const todayWeight = weights.find((w) => w.date === date)
 
   function handleCalc() {
     const w = Number(pWeight), h = Number(pHeight), a = Number(pAge), act = Number(pActivity)
@@ -71,7 +73,7 @@ export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings
   async function handleLogWeight() {
     const val = Number(weightInput)
     if (!val || val < 20 || val > 300) return
-    await logWeight(uid, val, today())
+    await logWeight(uid, val, date)
     setWeightInput("")
   }
 
@@ -136,7 +138,7 @@ export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings
             {todayWeight ? (
               <div className="flex items-center justify-between rounded-lg bg-muted px-3 py-2">
                 <span className="text-sm font-bold">{todayWeight.kg} kg <span className="text-xs font-normal text-muted-foreground">logged today</span></span>
-                <button onClick={() => deleteWeightLog(uid, today())}
+                <button onClick={() => deleteWeightLog(uid, date)}
                   className="text-xs text-muted-foreground hover:text-destructive transition-colors">Remove</button>
               </div>
             ) : (

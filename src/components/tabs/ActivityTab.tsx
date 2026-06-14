@@ -1,12 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { addWork, deleteWork, addScreen, deleteScreen, type WorkItem, type ScreenItem, today, todays, round1, sum } from "@/lib/firestore"
+import { addWork, deleteWork, addScreen, deleteScreen, type WorkItem, type ScreenItem, round1, sum } from "@/lib/firestore"
 import { Plus, Trash2 } from "lucide-react"
 
-interface Props { uid: string; work: WorkItem[]; screen: ScreenItem[] }
+interface Props { uid: string; work: WorkItem[]; screen: ScreenItem[]; date: string }
 
-export function ActivityTab({ uid, work, screen }: Props) {
+export function ActivityTab({ uid, work, screen, date }: Props) {
   const [workName, setWorkName] = useState("")
   const [workHrs, setWorkHrs] = useState("")
   const [screenName, setScreenName] = useState("")
@@ -14,18 +14,18 @@ export function ActivityTab({ uid, work, screen }: Props) {
 
   async function handleAddWork() {
     if (!workName.trim()) return
-    await addWork(uid, { name: workName.trim(), hours: Number(workHrs) || 0, date: today() })
+    await addWork(uid, { name: workName.trim(), hours: Number(workHrs) || 0, date })
     setWorkName(""); setWorkHrs("")
   }
 
   async function handleAddScreen() {
     if (!screenName.trim()) return
-    await addScreen(uid, { name: screenName.trim(), hours: Number(screenHrs) || 0, date: today() })
+    await addScreen(uid, { name: screenName.trim(), hours: Number(screenHrs) || 0, date })
     setScreenName(""); setScreenHrs("")
   }
 
-  const workItems = todays(work)
-  const screenItems = todays(screen)
+  const workItems = work.filter((x) => x.date === date)
+  const screenItems = screen.filter((x) => x.date === date)
   const totalWork = round1(sum(workItems, (x) => x.hours))
   const totalScreen = round1(sum(screenItems, (x) => x.hours))
 

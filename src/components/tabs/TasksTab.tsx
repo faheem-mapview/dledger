@@ -1,16 +1,16 @@
 "use client"
 
 import { useState } from "react"
-import { addTask, toggleTask, deleteTask, type Task, today } from "@/lib/firestore"
+import { addTask, toggleTask, deleteTask, type Task } from "@/lib/firestore"
 import { Plus, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
-interface Props { uid: string; tasks: Task[] }
+interface Props { uid: string; tasks: Task[]; date: string }
 
 const isOverdue = (iso: string) => { const d = new Date(); d.setHours(0,0,0,0); return iso ? new Date(iso + "T00:00:00") < d : false }
 const fmtDate = (iso: string) => iso ? new Date(iso + "T00:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric" }) : ""
 
-export function TasksTab({ uid, tasks }: Props) {
+export function TasksTab({ uid, tasks, date }: Props) {
   const [text, setText] = useState("")
   const [due, setDue] = useState("")
   const [priority, setPriority] = useState<Task["priority"]>("medium")
@@ -18,11 +18,12 @@ export function TasksTab({ uid, tasks }: Props) {
 
   async function handleAdd() {
     if (!text.trim()) return
-    await addTask(uid, { text: text.trim(), due, priority, done: false, date: today() })
+    await addTask(uid, { text: text.trim(), due, priority, done: false, date })
     setText(""); setDue("")
   }
 
-  const shown = tasks.filter((t) => filter === "all" ? true : filter === "active" ? !t.done : t.done)
+  const dateTasks = tasks.filter((t) => t.date === date)
+  const shown = dateTasks.filter((t) => filter === "all" ? true : filter === "active" ? !t.done : t.done)
 
   return (
     <div className="space-y-4">
@@ -58,7 +59,7 @@ export function TasksTab({ uid, tasks }: Props) {
 
       {/* List */}
       {shown.length === 0 ? (
-        <Empty big={tasks.length ? "Nothing here" : "No tasks yet"} sub={tasks.length ? "No tasks match this filter." : "Add your first task above."} />
+        <Empty big={dateTasks.length ? "Nothing here" : "No tasks yet"} sub={dateTasks.length ? "No tasks match this filter." : "Add your first task above."} />
       ) : (
         <div className="space-y-2">
           {shown.map((t) => (

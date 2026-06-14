@@ -17,8 +17,47 @@ import { CollectionsTab } from "@/components/tabs/CollectionsTab"
 import { cn } from "@/lib/utils"
 import {
   LayoutDashboard, CheckSquare, UtensilsCrossed, Dumbbell,
-  Monitor, BookOpen, LogOut, Bell, Settings, Menu,
+  Monitor, BookOpen, LogOut, Bell, Settings, Menu, ChevronLeft, ChevronRight, CalendarDays,
 } from "lucide-react"
+
+function DateNav({ date, onChange }: { date: string; onChange: (d: string) => void }) {
+  const todayStr = new Date().toISOString().slice(0, 10)
+  const isToday = date === todayStr
+
+  function shift(days: number) {
+    const d = new Date(date + "T00:00:00")
+    d.setDate(d.getDate() + days)
+    const next = d.toISOString().slice(0, 10)
+    if (next <= todayStr) onChange(next)
+  }
+
+  const label = isToday
+    ? "Today"
+    : date === new Date(new Date().setDate(new Date().getDate() - 1)).toISOString().slice(0, 10)
+    ? "Yesterday"
+    : new Date(date + "T00:00:00").toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })
+
+  return (
+    <div className="mb-4 flex items-center gap-2">
+      <button onClick={() => shift(-1)}
+        className="rounded-lg border border-border bg-card p-1.5 text-muted-foreground hover:bg-accent transition-colors">
+        <ChevronLeft className="h-4 w-4" />
+      </button>
+      <div className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-border bg-card px-4 py-2">
+        <CalendarDays className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+        <input type="date" value={date} max={todayStr}
+          onChange={(e) => { if (e.target.value <= todayStr) onChange(e.target.value) }}
+          className="sr-only" id="date-pick" />
+        <label htmlFor="date-pick" className="cursor-pointer text-sm font-semibold select-none">{label}</label>
+        <span className="text-xs text-muted-foreground hidden sm:inline">{date}</span>
+      </div>
+      <button onClick={() => shift(1)} disabled={isToday}
+        className="rounded-lg border border-border bg-card p-1.5 text-muted-foreground hover:bg-accent transition-colors disabled:opacity-30">
+        <ChevronRight className="h-4 w-4" />
+      </button>
+    </div>
+  )
+}
 
 const TABS = [
   { id: "overview", label: "Dashboard", icon: LayoutDashboard },
@@ -43,6 +82,7 @@ export default function DashboardPage() {
   const [weights, setWeights] = useState<WeightLog[]>([])
   const [settings, setSettings] = useState<UserSettings>({ maintenance: "", unit: "kg", profile: {} })
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().slice(0, 10))
 
   useEffect(() => {
     if (!loading && !user) router.replace("/login")
@@ -171,11 +211,15 @@ export default function DashboardPage() {
 
         {/* Content */}
         <main className="flex-1 overflow-y-auto p-4 sm:p-6">
-          {tab === "overview" && <OverviewTab uid={user.uid} food={food} exercise={exercise} work={work} screen={screen} tasks={tasks} settings={settings} weights={weights} onSettingsChange={setSettings} />}
-          {tab === "tasks" && <TasksTab uid={user.uid} tasks={tasks} />}
-          {tab === "food" && <FoodTab uid={user.uid} food={food} />}
-          {tab === "exercise" && <ExerciseTab uid={user.uid} exercise={exercise} />}
-          {tab === "activity" && <ActivityTab uid={user.uid} work={work} screen={screen} />}
+          {/* Date navigator — hidden on Daily Log tab */}
+          {tab !== "collections" && (
+            <DateNav date={selectedDate} onChange={setSelectedDate} />
+          )}
+          {tab === "overview" && <OverviewTab uid={user.uid} food={food} exercise={exercise} work={work} screen={screen} tasks={tasks} settings={settings} weights={weights} date={selectedDate} onSettingsChange={setSettings} />}
+          {tab === "tasks" && <TasksTab uid={user.uid} tasks={tasks} date={selectedDate} />}
+          {tab === "food" && <FoodTab uid={user.uid} food={food} date={selectedDate} />}
+          {tab === "exercise" && <ExerciseTab uid={user.uid} exercise={exercise} date={selectedDate} />}
+          {tab === "activity" && <ActivityTab uid={user.uid} work={work} screen={screen} date={selectedDate} />}
           {tab === "collections" && <CollectionsTab food={food} exercise={exercise} work={work} screen={screen} tasks={tasks} settings={settings} weights={weights} />}
         </main>
       </div>

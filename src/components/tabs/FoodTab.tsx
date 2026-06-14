@@ -1,23 +1,23 @@
 "use client"
 
 import { useState } from "react"
-import { addFood, deleteFood, type FoodItem, today, todays, sum } from "@/lib/firestore"
+import { addFood, deleteFood, type FoodItem, sum } from "@/lib/firestore"
 import { Plus, Trash2 } from "lucide-react"
 
-interface Props { uid: string; food: FoodItem[] }
+interface Props { uid: string; food: FoodItem[]; date: string }
 
-export function FoodTab({ uid, food }: Props) {
+export function FoodTab({ uid, food, date }: Props) {
   const [name, setName] = useState("")
   const [calories, setCalories] = useState("")
   const [source, setSource] = useState<FoodItem["source"]>("home")
 
   async function handleAdd() {
     if (!name.trim()) return
-    await addFood(uid, { name: name.trim(), calories: Number(calories) || 0, source, date: today() })
+    await addFood(uid, { name: name.trim(), calories: Number(calories) || 0, source, date })
     setName(""); setCalories("")
   }
 
-  const items = todays(food)
+  const items = food.filter((x) => x.date === date)
   const total = sum(items, (x) => x.calories)
 
   return (

@@ -1,23 +1,23 @@
 "use client"
 
 import { useState } from "react"
-import { addExercise, deleteExercise, type ExerciseItem, today, todays, sum } from "@/lib/firestore"
+import { addExercise, deleteExercise, type ExerciseItem, sum } from "@/lib/firestore"
 import { Plus, Trash2 } from "lucide-react"
 
-interface Props { uid: string; exercise: ExerciseItem[] }
+interface Props { uid: string; exercise: ExerciseItem[]; date: string }
 
-export function ExerciseTab({ uid, exercise }: Props) {
+export function ExerciseTab({ uid, exercise, date }: Props) {
   const [name, setName] = useState("")
   const [minutes, setMinutes] = useState("")
   const [calories, setCalories] = useState("")
 
   async function handleAdd() {
     if (!name.trim()) return
-    await addExercise(uid, { name: name.trim(), minutes: Number(minutes) || 0, calories: Number(calories) || 0, date: today() })
+    await addExercise(uid, { name: name.trim(), minutes: Number(minutes) || 0, calories: Number(calories) || 0, date })
     setName(""); setMinutes(""); setCalories("")
   }
 
-  const items = todays(exercise)
+  const items = exercise.filter((x) => x.date === date)
   const totalCal = sum(items, (x) => x.calories)
   const totalMin = sum(items, (x) => x.minutes)
 
