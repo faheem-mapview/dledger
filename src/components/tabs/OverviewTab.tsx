@@ -344,14 +344,14 @@ function WeightGraph({ weights }: { weights: WeightLog[] }) {
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full" preserveAspectRatio="none" style={{ height: 80 }}>
           <defs>
             <linearGradient id="wg" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="oklch(0.546 0.245 262.881)" stopOpacity="0.25" />
-              <stop offset="100%" stopColor="oklch(0.546 0.245 262.881)" stopOpacity="0" />
+              <stop offset="0%" stopColor="#E35336" stopOpacity="0.25" />
+              <stop offset="100%" stopColor="#E35336" stopOpacity="0" />
             </linearGradient>
           </defs>
           <path d={area} fill="url(#wg)" />
-          <path d={path} fill="none" stroke="oklch(0.546 0.245 262.881)" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
+          <path d={path} fill="none" stroke="#E35336" strokeWidth="1.5" strokeLinejoin="round" strokeLinecap="round" />
           {pts.map((p, i) => (
-            <circle key={i} cx={p.x} cy={p.y} r="2.5" fill="oklch(0.546 0.245 262.881)" />
+            <circle key={i} cx={p.x} cy={p.y} r="2.5" fill="#E35336" />
           ))}
         </svg>
         <div className="flex justify-between mt-1 px-1">

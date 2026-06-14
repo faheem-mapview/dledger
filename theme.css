@@ -1,0 +1,106 @@
+/* ============================================================
+   Daily Ledger — Burnt Sienna theme
+   (warm recolor built on AVLView / Untitled UI structure)
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Fraunces:opsz,wght@9..144,500;9..144,600&display=swap');
+
+:root {
+  /* burnt sienna palette */
+  --terracotta: #E35336;
+  --terracotta-deep: #C8442A;
+  --sandy: #F4A460;
+  --sienna: #A0522D;
+  --cream: #F5F5DC;
+
+  /* accent (tweakable) */
+  --accent: var(--terracotta);
+  --accent-deep: var(--terracotta-deep);
+  --accent-soft: #FBE3DC;     /* tint behind accent icons */
+  --accent-ring: rgba(227,83,54,0.32);
+
+  /* warm neutrals */
+  --canvas:   #FBF7F0;
+  --surface:  #FFFFFF;
+  --subtle:   #F6EFE3;        /* muted warm panel */
+  --zebra:    #FBF6EC;
+  --nav-active: #FBE9E1;
+
+  --ink:      #2A1E16;        /* primary text */
+  --ink-2:    #6E5F50;        /* secondary */
+  --ink-3:    #9D8C78;        /* tertiary / muted */
+  --ink-4:    #BBAC97;        /* faint */
+
+  --line:     #ECE2D2;        /* hairline */
+  --line-2:   #DECFB8;        /* medium border */
+
+  /* earthy status */
+  --good:     #6E8B3D;        /* olive green */
+  --good-soft:#EAF0DC;
+  --warn:     #D98324;
+  --warn-soft:#FBEBD3;
+  --bad:      #C0402B;
+  --bad-soft: #F7E0D9;
+
+  /* shadows — soft warm */
+  --shadow-xs: 0 1px 2px rgba(80,50,30,0.05);
+  --shadow-sm: 0 1px 3px rgba(80,50,30,0.08), 0 1px 2px -1px rgba(80,50,30,0.08);
+  --shadow-md: 0 6px 16px -6px rgba(90,55,30,0.16), 0 2px 6px -2px rgba(90,55,30,0.08);
+  --shadow-lg: 0 18px 40px -12px rgba(90,55,30,0.22);
+
+  /* radii */
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 16px;
+  --r-pill: 9999px;
+
+  /* density (tweakable) */
+  --pad: 20px;
+  --row-pad: 13px;
+  --gap: 18px;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
+}
+
+[data-theme="dark"] {
+  --canvas:  #1E1712;
+  --surface: #2A2017;
+  --subtle:  #332619;
+  --zebra:   #2F2418;
+  --nav-active: #3A2419;
+  --accent-soft: #43271d;
+
+  --ink:   #F5ECDE;
+  --ink-2: #C3B4A1;
+  --ink-3: #95846F;
+  --ink-4: #6E5F4E;
+
+  --line:   #3B2E20;
+  --line-2: #4A3A28;
+
+  --good-soft:#2C3320;
+  --warn-soft:#3A2D17;
+  --bad-soft: #3A2018;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4);
+  --shadow-md: 0 8px 20px -8px rgba(0,0,0,0.55);
+  --shadow-lg: 0 22px 48px -14px rgba(0,0,0,0.6);
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: var(--ink);
+  background: var(--canvas);
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings: "cv11","ss01";
+}
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button { font-family: inherit; cursor: pointer; }
+::selection { background: var(--accent-soft); }
+
+/* scrollbar */
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 99px; border: 3px solid transparent; background-clip: content-box; }
+*::-webkit-scrollbar-track { background: transparent; }
