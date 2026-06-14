@@ -75,6 +75,17 @@ export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings
     if (!val || val < 20 || val > 300) return
     await logWeight(uid, val, date)
     setWeightInput("")
+    // Auto-recalculate maintenance if profile is complete
+    const { height, age, sex, activity } = settings.profile
+    if (height && age && sex && activity) {
+      const bmr = 10 * val + 6.25 * height - 5 * age + (sex === "male" ? 5 : -161)
+      const m = Math.round(bmr * activity)
+      const next: UserSettings = { ...settings, maintenance: m, profile: { ...settings.profile, weight: val } }
+      setPWeight(String(val))
+      setMaintVal(String(m))
+      onSettingsChange(next)
+      saveSettings(uid, next)
+    }
   }
 
   return (

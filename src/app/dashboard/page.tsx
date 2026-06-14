@@ -17,20 +17,12 @@ import { CollectionsTab } from "@/components/tabs/CollectionsTab"
 import { cn } from "@/lib/utils"
 import {
   LayoutDashboard, CheckSquare, UtensilsCrossed, Dumbbell,
-  Monitor, BookOpen, LogOut, Bell, Settings, Menu, ChevronLeft, ChevronRight, CalendarDays,
+  Monitor, BookOpen, LogOut, Bell, Settings, Menu, CalendarDays,
 } from "lucide-react"
 
 function DateNav({ date, onChange }: { date: string; onChange: (d: string) => void }) {
   const todayStr = new Date().toISOString().slice(0, 10)
   const isToday = date === todayStr
-
-  function shift(days: number) {
-    const d = new Date(date + "T00:00:00")
-    d.setDate(d.getDate() + days)
-    const next = d.toISOString().slice(0, 10)
-    if (next <= todayStr) onChange(next)
-  }
-
   const label = isToday
     ? "Today"
     : date === new Date(new Date().setDate(new Date().getDate() - 1)).toISOString().slice(0, 10)
@@ -38,23 +30,15 @@ function DateNav({ date, onChange }: { date: string; onChange: (d: string) => vo
     : new Date(date + "T00:00:00").toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" })
 
   return (
-    <div className="mb-4 flex items-center gap-2">
-      <button onClick={() => shift(-1)}
-        className="rounded-lg border border-border bg-card p-1.5 text-muted-foreground hover:bg-accent transition-colors">
-        <ChevronLeft className="h-4 w-4" />
-      </button>
-      <div className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-border bg-card px-4 py-2">
+    <div className="mb-4 relative">
+      <label htmlFor="date-pick" className="flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-border bg-card px-4 py-2 hover:bg-accent transition-colors">
         <CalendarDays className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-        <input type="date" value={date} max={todayStr}
-          onChange={(e) => { if (e.target.value <= todayStr) onChange(e.target.value) }}
-          className="sr-only" id="date-pick" />
-        <label htmlFor="date-pick" className="cursor-pointer text-sm font-semibold select-none">{label}</label>
-        <span className="text-xs text-muted-foreground hidden sm:inline">{date}</span>
-      </div>
-      <button onClick={() => shift(1)} disabled={isToday}
-        className="rounded-lg border border-border bg-card p-1.5 text-muted-foreground hover:bg-accent transition-colors disabled:opacity-30">
-        <ChevronRight className="h-4 w-4" />
-      </button>
+        <span className="text-sm font-semibold">{label}</span>
+        <span className="text-xs text-muted-foreground">{!isToday ? date : ""}</span>
+      </label>
+      <input type="date" id="date-pick" value={date} max={todayStr}
+        onChange={(e) => { if (e.target.value <= todayStr) onChange(e.target.value) }}
+        className="absolute inset-0 opacity-0 cursor-pointer w-full" />
     </div>
   )
 }
