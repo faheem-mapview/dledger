@@ -159,6 +159,22 @@ export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings
     }
   }
 
+  /* Auto-save when activity level changes (if profile already filled) */
+  function handleActivityChange(val: string) {
+    setPActivity(val)
+    const w = Number(pWeight), h = Number(pHeight), a = ageFromDob(pDob)
+    if (w && h && pDob) {
+      const act = Number(val)
+      const bmr = 10 * w + 6.25 * h - 5 * a + (pSex === "male" ? 5 : -161)
+      const m = Math.round(bmr * act)
+      const next: UserSettings = { ...settings, maintenance: m, profile: { ...settings.profile, activity: act } }
+      setMaintVal(String(m)); onSettingsChange(next); saveSettings(uid, next)
+    } else {
+      const next: UserSettings = { ...settings, profile: { ...settings.profile, activity: Number(val) } }
+      onSettingsChange(next); saveSettings(uid, next)
+    }
+  }
+
   /* ── card style ── */
   const card: React.CSSProperties = {
     background: "#fff", border: "1px solid #ECE2D2", borderRadius: 14,
@@ -172,22 +188,19 @@ export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings
       {/* ── Overall Analytics ── */}
       <AnalyticsSection food={food} weights={weights} />
 
-      {/* ── KPI row ── */}
-      <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+      {/* ── KPI grid ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 14 }}>
         <Kpi icon={<UtensilsCrossed size={19} />} tint={T.terracotta} label="Calories Eaten"  value={cIn}                  sub="kcal"
           delta={maint ? { good: cIn <= maint, text: cIn <= maint ? "On track" : "Over" } : undefined} />
         <Kpi icon={<Dumbbell size={19} />}        tint={T.olive}      label="Calories Burned" value={cOut}                 sub="kcal" />
         <Kpi icon={<TrendingUp size={19} />}      tint={T.blue}       label="Work Hours"       value={round1(workH) + "h"} sub="today" />
         <Kpi icon={<Monitor size={19} />}         tint={T.rose}       label="Screen Time"      value={round1(screenH) + "h"} sub="today" />
-      </div>
-
-      <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
         <Kpi icon={<CheckSquare size={19} />}     tint={T.amber}      label="Tasks Done"   value={`${tasksDone} / ${tasksTotal}`} sub="today" />
         <Kpi icon={<UtensilsCrossed size={19} />} tint={T.ink}        label="Meals Logged" value={meals} sub={hotel > 0 ? `${hotel} eating out` : "logged"} />
       </div>
 
       {/* ── Weight + Calculator ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 20 }}>
 
         {/* Weight estimate */}
         <div style={card}>
@@ -312,7 +325,7 @@ export function OverviewTab({ uid, food, exercise, work, screen, tasks, settings
               </div>
               <div style={{ marginBottom: 14 }}>
                 <label style={{ ...label, display: "block", marginBottom: 6 }}>Activity level</label>
-                <select value={pActivity} onChange={(e) => setPActivity(e.target.value)}
+                <select value={pActivity} onChange={(e) => handleActivityChange(e.target.value)}
                   style={{ width: "100%", height: 38, padding: "0 10px", border: "1px solid #DECFB8", borderRadius: 8, fontSize: 13.5, background: "#FBF7F0", color: "#2A1E16", outline: "none", fontFamily: "inherit", boxSizing: "border-box" }}>
                   <option value="1.2">Sedentary</option>
                   <option value="1.375">Light activity</option>
